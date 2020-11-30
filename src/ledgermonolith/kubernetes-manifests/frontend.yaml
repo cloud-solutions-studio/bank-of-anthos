@@ -25,6 +25,7 @@ spec:
       labels:
         app: frontend
     spec:
+      serviceAccountName: boa-sa
       terminationGracePeriodSeconds: 5
       containers:
       - name: front
@@ -40,6 +41,8 @@ spec:
           value: "8080"
         - name: SCHEME
           value: "http"
+        - name: ENABLE_TRACING
+          value: "true"
          # Valid levels are debug, info, warning, error, critical. If no valid level is set, gunicorn will default to info.
         - name: LOG_LEVEL
           value: "info"

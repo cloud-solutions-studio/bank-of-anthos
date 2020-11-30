@@ -14,7 +14,8 @@
 
 .-PHONY: cluster deploy deploy-continuous logs checkstyle check-env
 
-CLUSTER=bank-of-anthos
+ZONE=us-west2-a
+CLUSTER=gke-prod-us-west2a-1
 E2E_PATH=${PWD}/.github/workflows/ui-tests/
 
 cluster: check-env
