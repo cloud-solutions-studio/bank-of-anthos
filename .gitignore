@@ -161,6 +161,3 @@ src/ledgermonolith/istio/istio-1.*
 
 # Cypress
 .github/workflows/ui-tests/cypress/screenshots
-
-# Workload Identity SA
-sa.json

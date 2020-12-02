@@ -1,8 +1,0 @@
-# startup-script-systemd.service
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/opt/monolith/startup-script.sh
-
-[Install]
-WantedBy=multi-user.target

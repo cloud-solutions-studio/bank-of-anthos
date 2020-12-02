@@ -1,12 +1,9 @@
 <!--
-Copyright 2018 Google LLC
-
+Copyright 2020 Google LLC
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     https://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,20 +16,34 @@ limitations under the License.
       <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+      {% if cymbal_logo == "true" %}
+      <title>CymbalBank</title>
+      {% else %}
       <title>{{ bank_name }}</title>
-      <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+      {{ bank_name }}
+      {% endif %}
+      <link rel="icon" href=”static/img/favicon.png”/>
       <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-      <link rel="stylesheet" href="static/styles/demo.css">
+      <link rel="preconnect" href="https://fonts.gstatic.com">
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="static/styles/cymbal.css">
+
    </head>
     <body>
       <!-- Bank of Anthos Navigation Bar -->
       <header>
         <nav class="navbar navbar-expand-lg navbar-top">
           <div class="container">
-            <a class="navbar-brand">
+              {% if cymbal_logo == "true" %}
+              <div class="logo-container">
+                <img id="cymbal-logo" src="static/img/cymbal.svg">
+              </div>
+              {% else %}
+              <a class="navbar-brand">
               {{ bank_name }}
             </a>
+              {% endif %}
             <button type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler navbar-toggler-right">
               <span class="material-icons">menu</span>
             </button>
@@ -71,13 +82,13 @@ limitations under the License.
             </div>
           </div>
           {% endif %}
-          <div class="col-md-8">        
+          <div class="col-md-8">
             <small class="text-uppercase text-muted secondary-text">Overview</small>
             <h2 class="header-title">Checking Account</h2>
           </div>
           <div class="col-md-4">
             <div class="account-info float-right">
-              <p><span class="account-fa material-icons">info</span><span class="account-num-text">Account Number:</span><span class="account-number">{{ account_id }}</span></p>
+              <p><span class="account-overview material-icons">info</span><span class="account-num-text">Account Number:</span><span class="account-number">{{ account_id }}</span></p>
             </div>
           </div>
         </div>
@@ -89,15 +100,12 @@ limitations under the License.
                 <div class="card-body">
                   <div class="row align-items-center">
                     <div class="col">
-                      <p class="text-uppercase secondary-text text-muted mb-3">
-                        <b>Current Balance</b>
+                      <p class="text-uppercase mb-3">
+                        <b class="current-balance">Current Balance</b>
                       </p>
                       <span class="h1 mb-0" id="current-balance">
                         {{ format_currency(balance) }}
                       </span>
-                    </div>
-                    <div class="col-auto">
-                      <span class="material-icons card-icon">account_balance_wallet</span>
                     </div>
                   </div>
                 </div>
@@ -115,7 +123,7 @@ limitations under the License.
                         </span>
                       </div>
                       <div class="button-icon col-auto">
-                        <span class="material-icons">get_app</span>
+                        <span class="material-icons" id="deposit-icon">get_app</span>
                       </div>
                     </div>
                   </div>
@@ -131,7 +139,7 @@ limitations under the License.
                         </span>
                       </div>
                       <div class="button-icon col-auto">
-                        <span class="material-icons">forward</span>
+                        <span class="material-icons" id="payment-icon">forward</span>
                       </div>
                     </div>
                   </div>
@@ -144,7 +152,7 @@ limitations under the License.
         <!-- Transaction History Table -->
         <div class="row col-lg-10 offset-lg-1 mb-4">
           <div class="col-lg-12">
-            <div class="card">
+            <div class="card" class="transaction-card">
               <div class="card-table-header">
                 <div class="row align-items-center">
                   <div class="col">
@@ -164,7 +172,7 @@ limitations under the License.
                   <thead class="text-uppercase">
                     <tr>
                       <th>
-                        <a class="text-transaction-header">Date</a> 
+                        <a class="text-transaction-header">Date</a>
                       </th>
                       <th>
                         <a class="text-transaction-header">Type</a>
@@ -188,7 +196,7 @@ limitations under the License.
                           </td>
                           {% if t.toAccountNum == account_id %}
                             <td class="transaction-type">
-                              <span class="text-success">●</span> Debit
+                              <span class="text-debit">●</span> Debit
                             </td>
                             <td class="transaction-account">
                               {{ t.fromAccountNum }}
@@ -205,7 +213,7 @@ limitations under the License.
                             </td>
                           {% elif t.fromAccountNum == account_id %}
                             <td class="transaction-type">
-                              <span class="text-warning">●</span> Credit
+                              <span class="text-credit">●</span> Credit
                             </td>
                             <td class="transaction-account">
                               {{ t.toAccountNum }}
@@ -294,7 +302,7 @@ limitations under the License.
                         <label class="text-uppercase text-muted secondary-text mb-1" for="deposit-amount">Deposit Amount</label>
                         <div class="input-group mb-3">
                           <div class="input-group-prepend mr-2">
-                            <span class="input-group-text"><span class="amount-font material-icons">attach_money</span></span>
+                            <span class="input-group-text"><span class="amount-font material-icons money-icon">attach_money</span></span>
                           </div>
                           <input class="form-control amount-font" type="number" autocomplete="off" step="0.01" id="deposit-amount" name="amount" placeholder="0.00" min="0.01" max="500000.00" required>
                           <div class="invalid-feedback">
@@ -305,7 +313,7 @@ limitations under the License.
                     </div>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary deposit-cancel" data-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                   <button type="submit" class="btn btn-primary">Deposit</button>
                 </div>
                 <input type="hidden" id="deposit-uuid" name="uuid">
@@ -328,7 +336,7 @@ limitations under the License.
                 <div class="modal-body">
                   <div class="row">
                     <div class="col-md-10 offset-md-1 mb-4">
-                      <label class="text-uppercase secondary-text text-muted mb-3" for="payment-accounts">Recipient</label>
+                      <label class="pop-up-label" for="payment-accounts">Recipient</label>
                       <select class="custom-select d-block w-100 mb-3" id="payment-accounts" name="account_num">
                         {% for account in contacts %}
                             {% if not account.is_external %}
@@ -360,7 +368,7 @@ limitations under the License.
                       </div>
                     </div>
                     <div class="col-md-10 offset-md-1">
-                      <label class="text-uppercase secondary-text text-muted mb-1" for="payment-amount">Transaction Amount</label>
+                      <label class="pop-up-label" for="payment-amount">Transaction Amount</label>
                       <div class="input-group mb-3">
                         <div class="input-group-prepend mr-2">
                           <span class="input-group-text"><span class="amount-font material-icons">attach_money</span></span>
@@ -374,7 +382,7 @@ limitations under the License.
                   </div>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary payment-cancel" data-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                   <button type="submit" class="btn btn-primary">Send</button>
                 </div>
               <input type="hidden" id="payment-uuid" name="uuid">
@@ -387,9 +395,9 @@ limitations under the License.
       <!-- Page Footer -->
       <footer class="footer">
         <div class="container">
-            <div class="row mb-2">© 2020 Google Inc</div>
+            <div class="row mb-2" class="footer-google-inc">© 2020 Google Inc</div>
             <div class="row mb-3">
-              <small class="text-muted">
+              <small class="footer-disclaimer">
                 This website is hosted for demo purposes only. It is not an
                 actual bank. This is not an official Google project.
               </small>
@@ -489,5 +497,5 @@ limitations under the License.
           RefreshModals();
         });
       </script>
-    </body> 
+    </body>
 </html>

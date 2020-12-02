@@ -15,65 +15,82 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
+  name: ledgerwriter
 spec:
   selector:
     matchLabels:
-      app: frontend
+      app: ledgerwriter
   template:
     metadata:
       labels:
-        app: frontend
+        app: ledgerwriter
     spec:
-      serviceAccountName: boa-sa
+      serviceAccountName: boa-ksa
       terminationGracePeriodSeconds: 5
       containers:
-      - name: front
-        image: gcr.io/bank-of-anthos/frontend:latest
+      - name: ledgerwriter
+        image: gcr.io/bank-of-anthos/ledgerwriter:v0.3.1
         volumeMounts:
         - name: publickey
           mountPath: "/root/.ssh"
           readOnly: true
         env:
         - name: VERSION
-          value: "v0.2.0"
+          value: "v0.3.1"
         - name: PORT
           value: "8080"
-        - name: SCHEME
-          value: "http"
         - name: ENABLE_TRACING
           value: "true"
-         # Valid levels are debug, info, warning, error, critical. If no valid level is set, gunicorn will default to info.
+        - name: ENABLE_METRICS
+          value: "true"
+         # tell Java to obey container memory limits
+        - name: JVM_OPTS
+          value: "-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+        # service level override of log level
         - name: LOG_LEVEL
           value: "info"
-        - name: DEFAULT_USERNAME
+        - name: NAMESPACE
           valueFrom:
-            configMapKeyRef:
-              name: demo-data-config
-              key: DEMO_LOGIN_USERNAME
-        - name: DEFAULT_PASSWORD
-          valueFrom:
-            configMapKeyRef:
-              name: demo-data-config
-              key: DEMO_LOGIN_PASSWORD
+            fieldRef:
+              fieldPath: metadata.namespace
         envFrom:
         - configMapRef:
             name: environment-config
         - configMapRef:
             name: service-api-config
+        # add ledger-db credentials from ConfigMap
+        - configMapRef:
+            name: ledger-db-config
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
         readinessProbe:
           httpGet:
             path: /ready
             port: 8080
-          initialDelaySeconds: 5
+          initialDelaySeconds: 60
           periodSeconds: 5
+          timeoutSeconds: 10
+      - name: cloudsql-proxy
         resources:
-          requests:
-            cpu: 100m
-            memory: 64Mi
           limits:
-            cpu: 500m
-            memory: 256Mi
+            cpu: "200m"
+            memory: "100Mi"
+        image: gcr.io/cloudsql-docker/gce-proxy:1.19.0-alpine
+        env:
+        - name: CONNECTION_NAME
+          valueFrom:
+            secretKeyRef:
+              name: cloud-sql-admin
+              key: connectionName
+        command: ["/cloud_sql_proxy",
+                  "-instances=$(CONNECTION_NAME)=tcp:5432"]
+        securityContext:
+          runAsNonRoot: true
       volumes:
       - name: publickey
         secret:
@@ -85,12 +102,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: ledgerwriter
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
-    app: frontend
+    app: ledgerwriter
   ports:
   - name: http
-    port: 80
+    port: 8080
     targetPort: 8080

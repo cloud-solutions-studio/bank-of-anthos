@@ -46,7 +46,7 @@ echo "Cleaning up VM if it already exists..."
 gcloud compute instances describe ledgermonolith-service \
     --project $PROJECT_ID \
     --zone $ZONE \
-    --quiet >/dev/null 2>&1 
+    --quiet >/dev/null 2>&1
 if [ $? -eq 0 ]; then
   gcloud compute instances delete ledgermonolith-service \
       --project $PROJECT_ID \
@@ -61,13 +61,13 @@ echo "Creating GCE instance..."
 gcloud compute instances create ledgermonolith-service \
     --project $PROJECT_ID \
     --zone $ZONE \
-    --network default \
+    --subnet=prod-gcp-vpc-01-us-west2-subnet-01 \
     --image-family=debian-10 \
     --image-project=debian-cloud \
     --machine-type=n1-standard-1 \
     --scopes cloud-platform,storage-ro \
     --metadata gcs-bucket=${GCS_BUCKET},VmDnsSetting=ZonalPreferred \
-    --metadata-from-file startup-script=${CWD}/../init/startup-script.sh \
+    --metadata-from-file startup-script=${CWD}/../init/install-script.sh \
     --tags monolith \
     --quiet
 
@@ -76,7 +76,7 @@ gcloud compute instances create ledgermonolith-service \
 echo "Creating firewall rule..."
 gcloud compute firewall-rules describe allow-http-monolith \
     --project $PROJECT_ID \
-    --quiet >/dev/null 2>&1 
+    --quiet >/dev/null 2>&1
 if [ $? -ne 0 ]; then
   gcloud compute firewall-rules create allow-http-monolith \
       --project $PROJECT_ID \
@@ -87,4 +87,3 @@ if [ $? -ne 0 ]; then
       --description "Allow port 8080 from bank-of-anthos to monolith VMs" \
       --quiet
 fi
-

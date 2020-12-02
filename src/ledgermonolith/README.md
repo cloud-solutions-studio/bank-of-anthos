@@ -30,8 +30,6 @@ Located in `init/ledgermonolith.env`
     - the routing number for our bank
   - `PUB_KEY_PATH`
     - the path to the JWT signer's public key, mounted as a secret
-  - `BALANCES_API_ADDR`
-    - the address and port of the `balancereader` service
   - `POSTGRES_DB`
     - URL of the service
   - `POSTGRES_USER`
@@ -92,22 +90,11 @@ Deploy the canonical version of the monolith to a Google Compute Engine VM.
 Use canonical build artifacts hosted on Google Cloud Storage at
 `gs://bank-of-anthos/monolith`.
 
-#### Make
-
 ```
 # In the root directory of the project repo
 export PROJECT_ID=<your-project-id>
 export ZONE=<your-gcp-zone>
 make monolith-deploy
-```
-
-#### Bash
-
-```
-# In the root directory of the project repo
-PROJECT_ID=<your-project-id>
-ZONE=<your-gcp-zone>
-./src/ledgermonolith/scripts/deploy-monolith.sh
 ```
 
 ### Option 2 - With Custom-built Artifacts
@@ -118,8 +105,6 @@ Compile and build artifacts locally and push them to Google Cloud Storage (GCS).
 Specify the GCS location with environment variable `GCS_BUCKET`.
 Artifacts will be pushed to `gs://{GCS_BUCKET}/monolith`.
 
-#### Make
-
 ```
 # In the root directory of the project repo
 export PROJECT_ID=<your-project-id>
@@ -127,17 +112,6 @@ export ZONE=<your-gcp-zone>
 export GCS_BUCKET=<your-gcs-bucket>
 make monolith-build
 make monolith-deploy
-```
-
-#### Bash
-
-```
-# In the root directory of the project repo
-PROJECT_ID=<your-project-id>
-ZONE=<your-gcp-zone>
-GCS_BUCKET=<your-gcs-bucket>
-./src/ledgermonolith/scripts/build-artifacts.sh
-./src/ledgermonolith/scripts/deploy-monolith.sh
 ```
 
 ## Checking the Monolith
@@ -197,26 +171,30 @@ PROJECT_ID=<your-project-id>
 ZONE=<your-gcp-zone>
 ```
 
-2. Create the kubernetes cluster
+2. Create a GKE cluster. 
 
 ```
 gcloud container clusters create ${CLUSTER} \
   --project=${PROJECT_ID} --zone=${ZONE} \
   --machine-type=e2-standard-4 --num-nodes=4 \
-  --enable-stackdriver-kubernetes --subnetwork=default \
-  --labels csm=
+  --enable-stackdriver-kubernetes --subnetwork=default
 ```
 
-3. Create a custom ConfigMap `kubernetes-manifests/config.yaml` based on the
-template file `kubernetes-manifests/config.yaml.template`. This tells the
-frontend how to reach the ledgermonolith API endpoints.
+3. Replace `[PROJECT_ID]` with your `$PROJECT_ID` in `src/ledgermonolith/config.yaml`. 
+
+4. Run the following commands from the root of this repository, to deploy your custom config alongside the other Bank of Anthos services. 
 
 ```
-sed 's/\[PROJECT_ID\]/${PROJECT_ID}/g' kubernetes-manifests/config.yaml.template > kubernetes-manifests/config.yaml
+kubectl apply -f src/ledgermonolith/config.yaml 
+kubectl apply -f extras/jwt/jwt-secret.yaml
+kubectl apply -f kubernetes-manifests/accounts-db.yaml
+kubectl apply -f kubernetes-manifests/userservice.yaml
+kubectl apply -f kubernetes-manifests/contacts.yaml
+kubectl apply -f kubernetes-manifests/frontend.yaml
+
+
+
+
+kubectl apply -f kubernetes-manifests/loadgenerator.yaml
 ```
 
-4. Run the following command from this directory: 
-
-```
-skaffold run --default-repo=gcr.io/${PROJECT_ID}/with-monolith
-```

@@ -14,7 +14,6 @@
 
 .-PHONY: cluster deploy deploy-continuous logs checkstyle check-env
 
-ZONE=us-west2-a
 CLUSTER=gke-prod-us-west2a-1
 E2E_PATH=${PWD}/.github/workflows/ui-tests/
 
@@ -50,7 +49,7 @@ monolith-build: check-env
 ifndef GCS_BUCKET
 	$(error GCS_BUCKET is undefined; specify a Google Cloud Storage bucket to store your build artifacts)
 endif
-	# build the artifacts for the ledgermonolith service 
+	# build the artifacts for the ledgermonolith service
 	mvn -f src/ledgermonolith/ package
 	src/ledgermonolith/scripts/build-artifacts.sh
 

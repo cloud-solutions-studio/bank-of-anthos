@@ -126,6 +126,7 @@ def create_app():
         _populate_contact_labels(account_id, transaction_list, contacts)
 
         return render_template('index.html',
+                               cymbal_logo=os.getenv('CYMBAL_LOGO', 'false'),
                                history=transaction_list,
                                balance=balance,
                                name=display_name,
@@ -138,13 +139,11 @@ def create_app():
     def _populate_contact_labels(account_id, transactions, contacts):
         """
         Populate contact labels for the passed transactions.
-
         Side effect:
             Take each transaction and set the 'accountLabel' field with the label of
             the contact each transaction was associated with. If there was no
             associated contact, set 'accountLabel' to None.
             If any parameter is None, nothing happens.
-
         Params: account_id - the account id for the user owning the transaction list
                 transactions - a list of transactions as key/value dicts
                             [{transaction1}, {transaction2}, ...]
@@ -170,7 +169,6 @@ def create_app():
     def payment():
         """
         Submits payment request to ledgerwriter service
-
         Fails if:
         - token is not valid
         - basic validation checks fail
@@ -226,7 +224,6 @@ def create_app():
     def deposit():
         """
         Submits deposit request to ledgerwriter service
-
         Fails if:
         - token is not valid
         - routing number == local routing number
@@ -303,7 +300,6 @@ def create_app():
     def _add_contact(label, acct_num, routing_num, is_external_acct=False):
         """
         Submits a new contact to the contact service.
-
         Raise: UserWarning  if the response status is 4xx or 5xx.
         """
         app.logger.debug('Adding new contact.')
@@ -342,6 +338,7 @@ def create_app():
                                     _scheme=app.config['SCHEME']))
 
         return render_template('login.html',
+                               cymbal_logo=os.getenv('CYMBAL_LOGO', 'false'),
                                message=request.args.get('msg', None),
                                default_user=os.getenv('DEFAULT_USERNAME', ''),
                                default_password=os.getenv('DEFAULT_PASSWORD', ''),
@@ -352,7 +349,6 @@ def create_app():
     def login():
         """
         Submits login request to userservice and saves resulting token
-
         Fails if userservice does not accept input username and password
         """
         return _login_helper(request.form['username'],
@@ -397,6 +393,7 @@ def create_app():
                                     _external=True,
                                     _scheme=app.config['SCHEME']))
         return render_template('signup.html',
+                               cymbal_logo=os.getenv('CYMBAL_LOGO', 'false'),
                                bank_name=os.getenv('BANK_NAME', 'Bank of Anthos'))
 
 
@@ -404,7 +401,6 @@ def create_app():
     def signup():
         """
         Submits signup request to userservice
-
         Fails if userservice does not accept input form data
         """
         try:

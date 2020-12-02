@@ -1,4 +1,4 @@
-# Copyright 2019 Google LLC
+# Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,58 +15,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
+  name: userservice
 spec:
   selector:
     matchLabels:
-      app: frontend
+      app: userservice
   template:
     metadata:
       labels:
-        app: frontend
+        app: userservice
     spec:
-      serviceAccountName: default
+      serviceAccountName: boa-ksa
       terminationGracePeriodSeconds: 5
       containers:
-      - name: front
-        image: gcr.io/bank-of-anthos/frontend:v0.3.1
+      - name: userservice
+        image: gcr.io/bank-of-anthos/userservice:v0.3.1
         volumeMounts:
-        - name: publickey
+        - name: keys
           mountPath: "/root/.ssh"
           readOnly: true
+        ports:
+        - name: http-server
+          containerPort: 8080
         env:
         - name: VERSION
-          value: "v0.3.1"
+          value: "v0.3.0"
         - name: PORT
           value: "8080"
         - name: ENABLE_TRACING
           value: "true"
-        - name: SCHEME
-          value: "http"
-         # Valid levels are debug, info, warning, error, critical. If no valid level is set, gunicorn will default to info.
+        - name: TOKEN_EXPIRY_SECONDS
+          value: "3600"
+        - name: PRIV_KEY_PATH
+          value: "/root/.ssh/privatekey"
+        # Valid levels are debug, info, warning, error, critical. If no valid level is set, gunicorn will default to info.
         - name: LOG_LEVEL
           value: "info"
-        # Set to "true" to enable the Cymbal Bank logo
-        - name: CYMBAL_LOGO
-          value: "true"
-        # When CYMBAL_LOGO is set to false or unset, the frontend uses this bank name. Defaults to "Bank of Anthos"
-        # - name: BANK_NAME
-        #   value: ""
-        - name: DEFAULT_USERNAME
-          valueFrom:
-            configMapKeyRef:
-              name: demo-data-config
-              key: DEMO_LOGIN_USERNAME
-        - name: DEFAULT_PASSWORD
-          valueFrom:
-            configMapKeyRef:
-              name: demo-data-config
-              key: DEMO_LOGIN_PASSWORD
         envFrom:
         - configMapRef:
             name: environment-config
         - configMapRef:
-            name: service-api-config
+            name: accounts-db-config
         readinessProbe:
           httpGet:
             path: /ready
@@ -81,23 +70,43 @@ spec:
           limits:
             cpu: 500m
             memory: 256Mi
+      - name: cloudsql-proxy
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "100Mi"
+        image: gcr.io/cloudsql-docker/gce-proxy:1.19.0-alpine
+        env:
+        - name: CONNECTION_NAME
+          valueFrom:
+            secretKeyRef:
+              name: cloud-sql-admin
+              key: connectionName
+        command: ["/cloud_sql_proxy",
+                  "-instances=$(CONNECTION_NAME)=tcp:5432"]
+        securityContext:
+          runAsNonRoot: true
       volumes:
-      - name: publickey
+      - name: keys
         secret:
           secretName: jwt-key
           items:
+          - key: jwtRS256.key
+            path: privatekey
           - key: jwtRS256.key.pub
             path: publickey
+
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: userservice
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
-    app: frontend
+    app: userservice
   ports:
   - name: http
-    port: 80
+    port: 8080
     targetPort: 8080
