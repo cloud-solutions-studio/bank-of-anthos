@@ -45,11 +45,11 @@ fi
 
 # Delete the firewall rule if it exists
 echo "Deleting firewall rule..."
-gcloud compute firewall-rules describe default-allow-http-80 \
+gcloud compute firewall-rules describe monolith-allow-ssh \
     --project $PROJECT_ID \
     --quiet >/dev/null 2>&1 
 if [ $? -eq 0 ]; then
-  gcloud compute firewall-rules delete default-allow-http-80 \
+  gcloud compute firewall-rules delete monolith-allow-ssh \
       --project $PROJECT_ID \
       --quiet
 fi

@@ -70,3 +70,21 @@ gcloud compute instances create ledgermonolith-service \
     --metadata-from-file startup-script=${CWD}/../init/install-script.sh \
     --tags monolith \
     --quiet
+
+# Create firewall rule to allow access to the monolith via IAP
+echo "Creating IAP firewall rule..."
+gcloud compute firewall-rules create monolith-allow-ssh \
+    --project $PROJECT_ID  \
+    --direction=INGRESS \
+    --priority=1000 \
+    --network=prod-gcp-vpc-01 \
+    --action=ALLOW \
+    --rules=tcp:22 \
+    --source-ranges=35.235.240.0/20 \
+    --target-tags=monolith
+
+# Grant user IAP Tunnel Resource Accessor role
+echo "Granting IAP Tunnel Resource Accessor role..."
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member=user:$GCLOUD_USER \
+    --role=roles/iap.tunnelResourceAccessor
