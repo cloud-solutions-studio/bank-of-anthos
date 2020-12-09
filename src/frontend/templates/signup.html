@@ -20,7 +20,6 @@ limitations under the License.
       <title>CymbalBank</title>
       {% else %}
       <title>{{ bank_name }}</title>
-      {{ bank_name }}
       {% endif %}
       <link rel="icon" href=”static/img/favicon.png”/>
       <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
@@ -37,7 +36,7 @@ limitations under the License.
           <div class="container">
             {% if cymbal_logo == "true" %}
             <div class="logo-container">
-              <img id="cymbal-logo" src="static/img/cymbal.svg">
+              <a href="/"><img id="cymbal-logo" src="static/img/cymbal.svg"></a>
             </div>
             {% else %}
             <a class="navbar-brand">
@@ -67,7 +66,7 @@ limitations under the License.
                         <!-- <small class="text-uppercase text-muted secondary-text">Section 1</small> -->
                         <h4 class="mb-4">Account Information</h4>
                         <div id="alertBanner" class="alert alert-danger mb-4 hidden" role="alert">
-                          <span class="alert-icon mr-2 material-icons">error</span>Passwords don't match. Please try again.
+                          <span class="alert-icon mr-2 material-icons error-icon">error</span>Passwords don't match. Please try again.
                         </div>
                         <div class="mb-5">
                           <label class="text-uppercase text-muted secondary-text" for="username">Username</label>
@@ -325,7 +324,7 @@ limitations under the License.
 
                         <hr class="mb-4">
                         <div class="col-lg-10 offset-lg-1 sign-in">
-                          <button class="btn btn-block btn-primary" type="submit">CREATE ACCOUNT</button>
+                          <button class="btn btn-block btn-primary" type="submit">Create Account</button>
                         </div>
                       </form>
                     </div>

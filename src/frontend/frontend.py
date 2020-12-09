@@ -201,7 +201,7 @@ def create_app():
             _submit_transaction(transaction_data)
             app.logger.info('Payment initiated successfully.')
             return redirect(url_for('home',
-                                    msg='Payment initiated',
+                                    msg='Payment successful',
                                     _external=True,
                                     _scheme=app.config['SCHEME']))
 
@@ -263,7 +263,7 @@ def create_app():
             _submit_transaction(transaction_data)
             app.logger.info('Deposit submitted successfully.')
             return redirect(url_for('home',
-                                    msg='Deposit accepted',
+                                    msg='Deposit successful',
                                     _external=True,
                                     _scheme=app.config['SCHEME']))
 
