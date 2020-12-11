@@ -23,9 +23,13 @@ if [[ -z ${PROJECT_ID} ]]; then
 elif [[ -z ${ZONE} ]]; then
   echo "ZONE must be set"
   exit 0
+elif [[ -z ${CLUSTER} ]]; then
+  echo "CLUSTER must be set"
+  exit 0
 else
   echo "PROJECT_ID: ${PROJECT_ID}"
   echo "ZONE: ${ZONE}"
+  echo "CLUSTER: ${CLUSTER}"
 fi
 
 
@@ -37,7 +41,7 @@ if [[ -z ${GCS_BUCKET} ]]; then
 fi
 echo "GCS_BUCKET: ${GCS_BUCKET}"
 
-# Subnetwork to deploy the Ledger Monolith VM to
+# Target subnetwork for Ledger Monolith VM
 if [[ -z ${VM_SUBNET} ]]; then
   # If no subnet specified, default to default subnet
   VM_SUBNET=default
@@ -96,3 +100,9 @@ echo "Granting IAP Tunnel Resource Accessor role..."
 gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member=user:$GCLOUD_USER \
     --role=roles/iap.tunnelResourceAccessor
+
+# Grant the target cluster service account the “Cloud Trace Agent” role
+export CLUSTER_SA=$(gcloud container clusters describe ${CLUSTER} --zone ${ZONE} --format json | jq -r '.nodeConfig.serviceAccount')
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:${CLUSTER_SA} \
+    --role=roles/cloudtrace.agent
