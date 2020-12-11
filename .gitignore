@@ -159,5 +159,8 @@ wi-kubernetes-manifests/
 src/ledgermonolith/istio/send-to-vm/
 src/ledgermonolith/istio/istio-1.*
 
+# ledgermonolith API endpoint config
+src/ledgermonolith/config.yaml
+
 # Cypress
 .github/workflows/ui-tests/cypress/screenshots
