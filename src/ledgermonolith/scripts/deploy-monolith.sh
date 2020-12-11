@@ -37,6 +37,14 @@ if [[ -z ${GCS_BUCKET} ]]; then
 fi
 echo "GCS_BUCKET: ${GCS_BUCKET}"
 
+# Subnetwork to deploy the Ledger Monolith VM to
+if [[ -z ${VM_SUBNET} ]]; then
+  # If no subnet specified, default to default subnet
+  VM_SUBNET=default
+  echo "Subnet not specified, defaulting to default subnetwork..."
+fi
+echo "VM_SUBNET: ${VM_SUBNET}"
+
 
 CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -61,7 +69,7 @@ echo "Creating GCE instance..."
 gcloud compute instances create ledgermonolith-service \
     --project $PROJECT_ID \
     --zone $ZONE \
-    --subnet=prod-gcp-vpc-01-us-west2-subnet-01 \
+    --subnet=$VM_SUBNET \
     --image-family=debian-10 \
     --image-project=debian-cloud \
     --machine-type=n1-standard-1 \
