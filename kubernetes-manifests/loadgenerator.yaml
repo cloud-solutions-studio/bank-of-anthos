@@ -24,10 +24,8 @@ spec:
     metadata:
       labels:
         app: loadgenerator
-        istio.io/rev: default
       annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
-        sidecar.istio.io/inject: "true"
     spec:
       serviceAccountName: cymbal-bank-sa
       terminationGracePeriodSeconds: 5

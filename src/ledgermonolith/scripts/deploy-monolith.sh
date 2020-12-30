@@ -102,6 +102,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --role=roles/iap.tunnelResourceAccessor
 
 # Create Cymbal Bank's Kubernetes Service Account
+gcloud container clusters get-credentials $CLUSTER --zone $ZONE --project $PROJECT_ID
 kubectl create serviceaccount --namespace default cymbal-bank-sa
 
 # Create Cymbal Bank's GCP Service Account

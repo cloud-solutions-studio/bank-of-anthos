@@ -31,9 +31,6 @@ spec:
       labels:
         app: accounts-db
         tier: db
-        istio.io/rev: default
-      annotations:
-        sidecar.istio.io/inject: "true"
     spec:
       serviceAccountName: cymbal-bank-sa
       containers:
