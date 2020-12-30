@@ -109,15 +109,15 @@ gcloud iam service-accounts create cymbal-bank-sa
 
 # Assign Workload Identity role to GCP Service Account
 gcloud iam service-accounts add-iam-policy-binding \
-  --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:${PROJECT_ID}.svc.id.goog[default/cymbal-bank-sa]" \
-  cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:${PROJECT_ID}.svc.id.goog[default/cymbal-bank-sa]" \
+  cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com
 
 # Annotate Kubernetes Service Account
 kubectl annotate serviceaccount \
-  --namespace default \
-  cymbal-bank-sa \
-  iam.gke.io/gcp-service-account=cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com
+  --namespace default \
+  cymbal-bank-sa \
+  iam.gke.io/gcp-service-account=cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com
 
 # Add IAM Roles to GCP Service Account
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
