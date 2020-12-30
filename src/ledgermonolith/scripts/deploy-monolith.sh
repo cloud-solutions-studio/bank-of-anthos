@@ -101,8 +101,41 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member=user:$GCLOUD_USER \
     --role=roles/iap.tunnelResourceAccessor
 
-# Grant the target cluster service account the “Cloud Trace Agent” role
-export CLUSTER_SA=$(gcloud container clusters describe ${CLUSTER} --zone ${ZONE} --format json | jq -r '.nodeConfig.serviceAccount')
+# Create Cymbal Bank's Kubernetes Service Account
+kubectl create serviceaccount --namespace default cymbal-bank-sa
+
+# Create Cymbal Bank's GCP Service Account
+gcloud iam service-accounts create cymbal-bank-sa
+
+# Assign Workload Identity role to GCP Service Account
+gcloud iam service-accounts add-iam-policy-binding \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:${PROJECT_ID}.svc.id.goog[default/cymbal-bank-sa]" \
+  cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com
+
+# Annotate Kubernetes Service Account
+kubectl annotate serviceaccount \
+  --namespace default \
+  cymbal-bank-sa \
+  iam.gke.io/gcp-service-account=cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com
+
+# Add IAM Roles to GCP Service Account
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
-    --member=serviceAccount:${CLUSTER_SA} \
+    --member=serviceAccount:cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com \
     --role=roles/cloudtrace.agent
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+    --role=roles/logging.logWriter
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+    --role=roles/monitoring.metricWriter
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+    --role=roles/monitoring.viewer
+
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member=serviceAccount:cymbal-bank-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+    --role=roles/stackdriver.resourceMetadata.writer

@@ -24,8 +24,11 @@ spec:
     metadata:
       labels:
         app: contacts
+        istio.io/rev: default
+      annotations:
+        sidecar.istio.io/inject: "true"
     spec:
-      serviceAccountName: default
+      serviceAccountName: cymbal-bank-sa
       terminationGracePeriodSeconds: 5
       containers:
       - name: contacts

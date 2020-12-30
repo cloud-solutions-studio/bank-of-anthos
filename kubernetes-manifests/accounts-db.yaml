@@ -31,8 +31,11 @@ spec:
       labels:
         app: accounts-db
         tier: db
+        istio.io/rev: default
+      annotations:
+        sidecar.istio.io/inject: "true"
     spec:
-      serviceAccountName: default
+      serviceAccountName: cymbal-bank-sa
       containers:
       - name: accounts-db
         image: gcr.io/bank-of-anthos/accounts-db:v0.4.0
